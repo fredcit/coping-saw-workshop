@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>線鋸工坊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+:root{
+  --bg:#211d1a; --panel:#2d2722; --panel-2:#3a322b; --line:rgba(239,217,174,.14);
+  --birch:#efd9ae; --cream:#fff6e4; --dim:#c4b195;
+  --accent:#f2b134; --accent-d:#c98a12; --accent-l:#ffd27a;
+  --ok:#4fb39a; --ok-l:#7fd8bf; --bad:#e05a47; --info:#6aa7d8;
+  --sans:"Noto Sans TC",system-ui,sans-serif; --serif:"Noto Serif TC","Noto Sans TC",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--cream);font-family:var(--sans);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.hidden{display:none!important}
+#app{position:relative;width:100vw;height:100dvh;background:
+  radial-gradient(120% 80% at 50% 0%,#3a3029 0%,transparent 60%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 2px,transparent 2px 9px),var(--bg)}
+.screen{position:absolute;inset:0;display:none}
+.screen.active{display:flex}
+.btn{padding:.7em 2em;border-radius:14px;font-weight:900;font-size:clamp(1rem,1.6vmin + .6rem,1.35rem);letter-spacing:.08em;transition:transform .12s,filter .12s}
+.btn-primary{background:var(--accent);color:#2a1d0c;box-shadow:0 5px 0 var(--accent-d),0 10px 24px rgba(0,0,0,.35)}
+.btn-primary:hover{filter:brightness(1.07)}
+.btn-primary:active{transform:translateY(4px);box-shadow:0 1px 0 var(--accent-d)}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--ok-l);outline-offset:3px}
+
+/* START */
+#screen-start{flex-direction:column;align-items:center;justify-content:space-evenly;padding:clamp(14px,3vmin,36px);text-align:center}
+.title{font-family:var(--serif);font-weight:900;font-size:clamp(2rem,7vmin + .5rem,4.6rem);line-height:1.1;color:var(--birch);text-shadow:0 3px 0 #000,0 0 40px rgba(242,177,52,.25)}
+.title small{display:block;font-size:.38em;letter-spacing:.4em;color:var(--accent);margin-top:.4em}
+.cover{width:min(46vmin,340px)}
+.cover svg{width:100%;height:auto;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-2deg)}}
+.guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,2.5vw,32px);width:min(980px,100%)}
+.guide-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.guide-item .ico{width:clamp(54px,10vmin,86px);aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--panel);display:grid;place-items:center;font-family:var(--serif);font-weight:900;font-size:clamp(1.2rem,3vmin,1.9rem);color:var(--accent)}
+.guide-item p{font-size:clamp(.82rem,1.5vmin + .45rem,1.1rem);color:var(--dim);line-height:1.45}
+
+/* PLAY */
+#screen-play{flex-direction:column;padding:clamp(8px,1.6vmin,18px);gap:clamp(8px,1.4vmin,14px)}
+#hud{display:flex;align-items:center;gap:clamp(10px,2vw,28px);padding:8px clamp(10px,2vw,22px);background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.hud-left{display:flex;flex-direction:column;min-width:0}
+.hud-step{font-size:.78rem;color:var(--accent)}
+.hud-project{font-family:var(--serif);font-weight:900;font-size:clamp(1rem,2vmin + .5rem,1.4rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-blade{flex:1;display:flex;align-items:center;gap:10px;max-width:440px;margin:0 auto}
+.hud-label{font-size:.78rem;color:var(--dim);white-space:nowrap}
+.blade-bar{flex:1;height:12px;border-radius:99px;background:rgba(0,0,0,.4);overflow:hidden;border:1px solid var(--line)}
+#blade-fill{height:100%;width:100%;background:linear-gradient(90deg,#9fb0ba,#e8eef1);transition:width .25s,background .25s}
+#blade-fill.mid{background:linear-gradient(90deg,#d99a2b,#f2c062)}
+#blade-fill.low{background:linear-gradient(90deg,#b8392a,#ee6b58)}
+.blade-text{font-variant-numeric:tabular-nums;font-weight:700;width:3.2em;text-align:right}
+#blade-wrap.hit{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+.hud-score{display:flex;align-items:baseline;gap:8px}
+#score{font-family:var(--serif);font-weight:900;font-size:clamp(1.3rem,3vmin + .5rem,2rem);color:var(--accent);font-variant-numeric:tabular-nums;display:inline-block}
+#score.bump{animation:bump .3s}
+@keyframes bump{50%{transform:scale(1.25)}}
+.score-pop{position:fixed;transform:translate(-50%,0);font-family:var(--serif);font-weight:900;font-size:1.6rem;color:var(--accent-l);pointer-events:none;z-index:50;text-shadow:0 2px 0 #000;animation:pop 1s forwards}
+@keyframes pop{to{transform:translate(-50%,-60px);opacity:0}}
+
+#stage{position:relative;flex:1;min-height:0}
+.view{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(8px,1.6vmin,18px);animation:fadeIn .35s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;min-height:0}
+.board-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:clamp(10px,2vmin,20px)}
+.board-svg{width:100%;max-height:100%;flex:1;min-height:0;aspect-ratio:1;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tag{padding:3px 12px;border-radius:99px;background:rgba(0,0,0,.3);border:1px solid var(--line);font-size:clamp(.75rem,1.2vmin + .4rem,.95rem);color:var(--birch)}
+.tag.thick{border-color:var(--accent);color:var(--accent-l)}
+
+.q-panel{display:flex;flex-direction:column;padding:clamp(12px,2.4vmin,26px);gap:clamp(8px,1.8vmin,18px)}
+.q-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.q-step{padding-top:8px;border-top:4px solid rgba(255,255,255,.12);font-size:.8rem;color:var(--dim);text-align:center}
+.q-step.now{border-color:var(--accent);color:var(--accent-l)}
+.q-step.ok{border-color:var(--ok);color:var(--ok-l)}
+.q-step.bad{border-color:var(--bad);color:#f59a8c}
+.q-prompt{font-family:var(--serif);font-weight:900;font-size:clamp(1.15rem,2.6vmin + .5rem,1.9rem)}
+.q-area{position:relative;flex:1;min-height:0}
+.q-options{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.6vmin,16px);animation:fadeIn .3s}
+.opt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px;border-radius:16px;background:var(--cream);color:#2a1d14;box-shadow:0 5px 0 #b99f78;transition:transform .12s,box-shadow .12s,opacity .2s}
+.opt:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 8px 0 #b99f78}
+.opt-vis{width:min(100%,180px);flex:0 1 auto;min-height:0}
+.opt-vis svg{width:100%;height:auto;display:block;max-height:16vh}
+.opt-label{font-weight:900;font-size:clamp(1rem,1.8vmin + .5rem,1.35rem)}
+.opt-sub{font-size:clamp(.75rem,1.1vmin + .45rem,.95rem);color:#7a6550}
+.opt.right{box-shadow:0 0 0 4px var(--ok),0 5px 0 #2f7d6a}
+.opt.wrong{box-shadow:0 0 0 4px var(--bad),0 5px 0 #8f2b1f;animation:shake .35s}
+.opt.spent:not(.right):not(.wrong){opacity:.45}
+.q-feedback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vmin,18px);padding:clamp(12px,2.5vmin,28px);border-radius:16px;border:2px solid var(--ok);background:rgba(0,0,0,.35);text-align:center;animation:fadeIn .3s}
+.q-feedback.bad{border-color:var(--bad)}
+.fb-verdict{font-family:var(--serif);font-weight:900;font-size:clamp(1.2rem,2.6vmin + .5rem,1.8rem);color:var(--ok-l)}
+.q-feedback.bad .fb-verdict{color:#f59a8c}
+.fb-text{max-width:36em;line-height:1.6;font-size:clamp(.9rem,1.5vmin + .5rem,1.1rem);color:var(--birch)}
+
+/* SAW */
+#saw-view{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr)}
+.progress-txt{font-weight:700;color:var(--accent-l)}
+#track{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);touch-action:none;cursor:grab;
+  background:radial-gradient(70% 60% at 50% 50%,#3c332b,#221d19)}
+#track.dragging{cursor:grabbing}
+#track.jam{animation:shake .35s}
+.rail{position:absolute;left:clamp(10px,2vw,22px);top:10%;bottom:10%;width:clamp(22px,3vw,30px);border-radius:99px;background:rgba(0,0,0,.35);border:1px solid var(--line);overflow:hidden}
+.zone{position:absolute;left:0;right:0;height:18%;display:grid;place-items:center;font-size:.7rem;color:var(--dim);background:rgba(79,179,154,.18)}
+.zone.top{top:0}.zone.bottom{bottom:0}
+#rail-marker{position:absolute;left:2px;right:2px;height:8px;margin-top:-4px;border-radius:99px;background:var(--cream);box-shadow:0 0 8px rgba(255,255,255,.5);top:8%}
+#rail-marker.in{background:var(--ok-l);box-shadow:0 0 12px var(--ok-l)}
+.center-guide{position:absolute;left:50%;top:0;bottom:0;border-left:1.5px dashed rgba(127,216,191,.25)}
+#plank{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:14px;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,#f6e2b9,#d9b47a 55%,#b88f55);box-shadow:0 6px 14px rgba(0,0,0,.45);transition:height .3s}
+#plank::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(120,80,40,.18) 0 1px,transparent 1px 23px)}
+#saw{position:absolute;left:50%;top:50%;height:84%;aspect-ratio:120/300;z-index:1;pointer-events:none;
+  transform-origin:75% 37%;transform:translate(-75%,-37%);will-change:transform}
+#saw svg{width:100%;height:100%;display:block;filter:drop-shadow(0 10px 12px rgba(0,0,0,.5))}
+#saw.broken{transition:transform 1s cubic-bezier(.5,0,.8,.4),opacity 1s;opacity:0}
+.gauge{position:absolute;right:clamp(10px,2vw,20px);top:clamp(10px,2vh,18px);width:clamp(70px,11vmin,110px);text-align:center;z-index:3}
+.gauge svg{width:100%;display:block}
+#needle{transform-origin:50px 52px;transition:stroke .2s}
+.gauge-text{font-weight:900;font-variant-numeric:tabular-nums;color:var(--ok-l)}
+.gauge.off .gauge-text{color:#f59a8c}
+.gauge.off #needle{stroke:#f59a8c}
+#turn-banner{position:absolute;left:50%;top:clamp(10px,3%,24px);transform:translateX(-50%);z-index:4;padding:8px 16px;border-radius:14px;background:rgba(224,90,71,.92);text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:pulse 1s infinite;white-space:nowrap}
+#turn-banner strong{font-size:clamp(.85rem,1.4vmin + .45rem,1.05rem)}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(224,90,71,.25),0 8px 20px rgba(0,0,0,.4)}}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.dots i{width:12px;height:12px;border-radius:50%;background:rgba(0,0,0,.35);border:2px solid #fff}
+.dots i.on{background:#fff}
+#hint{position:absolute;left:50%;top:22%;z-index:5;pointer-events:none}
+#hint span{display:block;width:44px;height:44px;margin-left:30px;border-radius:50%;border:3px solid var(--accent-l);background:rgba(242,177,52,.25);animation:drag 1.6s ease-in-out infinite}
+#hint span::after{content:"往下拉";position:absolute;left:52px;top:8px;font-size:.85rem;font-weight:700;color:var(--accent-l);white-space:nowrap}
+@keyframes drag{0%,10%{transform:translateY(0)}55%,65%{transform:translateY(var(--dist,160px))}100%{transform:translateY(0)}}
+#floats{position:absolute;inset:0;pointer-events:none;z-index:6}
+.float{position:absolute;left:50%;transform:translate(-50%,0);padding:5px 14px;border-radius:10px;font-weight:700;font-size:clamp(.82rem,1.3vmin + .45rem,1.02rem);white-space:nowrap;animation:floatUp 1.15s forwards;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.float.good{background:var(--ok);color:#06231c}
+.float.bad{background:var(--bad);color:#fff}
+.float.info{background:var(--info);color:#071c2c}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,10px)}15%{opacity:1;transform:translate(-50%,0)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+.key-hint{position:absolute;right:12px;bottom:8px;font-size:.72rem;color:var(--dim);opacity:.8;z-index:3}
+
+/* RESULT */
+#result{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(15,12,10,.72);backdrop-filter:blur(3px);padding:12px}
+.result-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(12px,3vmin,28px);align-items:center;width:min(820px,100%);max-height:100%;padding:clamp(14px,3vmin,30px);border-radius:22px;background:var(--panel-2);border:1px solid var(--line);box-shadow:0 20px 50px rgba(0,0,0,.5);animation:fadeIn .35s}
+#res-svg{width:100%;aspect-ratio:1;max-height:50vh}
+#res-title{font-family:var(--serif);font-weight:900;font-size:clamp(1.2rem,2.8vmin + .5rem,1.9rem);margin-bottom:10px}
+#res-lines{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:18px;font-size:clamp(.88rem,1.4vmin + .5rem,1.05rem);color:var(--birch);line-height:1.5}
+#res-lines b{color:var(--accent-l)}
+#res-lines .tip{display:block;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.3);border-left:4px solid var(--accent);color:var(--cream)}
+
+/* END */
+#screen-end{flex-direction:column;align-items:center;justify-content:space-evenly;padding:clamp(14px,3vmin,36px);text-align:center}
+.end-title{font-family:var(--serif);font-weight:900;font-size:clamp(1.6rem,4.5vmin + .6rem,3rem);color:var(--birch)}
+.end-score{font-family:var(--serif);font-weight:900;color:var(--accent);font-size:clamp(2.6rem,10vmin + .5rem,5.4rem);line-height:1}
+.end-score small{font-size:.38em;margin-left:6px;color:var(--birch)}
+#end-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(6px,2vmin,18px);width:min(860px,100%)}
+.stat{padding:clamp(8px,1.6vmin,16px) 6px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.stat b{display:block;font-family:var(--serif);font-size:clamp(1.2rem,3vmin + .4rem,2rem)}
+.stat span{font-size:clamp(.72rem,1.2vmin + .4rem,.95rem);color:var(--dim)}
+#end-best{color:var(--ok-l);min-height:1.4em}
+#end-review{max-width:640px;font-size:.92rem;color:var(--dim);line-height:1.6}
+
+@media (orientation:portrait){
+  .view,#saw-view{grid-template-columns:1fr;grid-template-rows:minmax(0,.8fr) minmax(0,1.2fr)}
+  #saw-view{grid-template-rows:minmax(0,.55fr) minmax(0,1.45fr)}
+  .board-card{flex-direction:row}
+  .board-svg{height:100%;width:auto}
+  .tags{flex-direction:column}
+  .result-card{grid-template-columns:1fr;text-align:center}
+  #res-svg{max-height:30vh}
+  #end-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .guide{grid-template-columns:1fr}
+  .guide-item{flex-direction:row;text-align:left}
+  .hud-blade .hud-label{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<main id="app">
+  <!-- 開始畫面 -->
+  <section id="screen-start" class="screen active">
+    <h1 class="title">線鋸工坊<small>曲線鋸切挑戰</small></h1>
+    <div class="cover" id="cover"></div>
+    <div class="guide">
+      <div class="guide-item"><div class="ico">選</div><p>讀圖樣與板厚，挑對鋸條和夾具</p></div>
+      <div class="guide-item"><div class="ico">拉</div><p>往下拉是出力切削，往上推要放輕</p></div>
+      <div class="guide-item"><div class="ico">直</div><p>每一鋸走滿全程，鋸條保持垂直 90°</p></div>
+    </div>
+    <button id="btn-start" class="btn btn-primary" type="button">開工</button>
+  </section>
+
+  <!-- 遊戲畫面 -->
+  <section id="screen-play" class="screen">
+    <header id="hud">
+      <div class="hud-left"><span id="hud-step" class="hud-step"></span><span id="hud-project" class="hud-project"></span></div>
+      <div class="hud-blade" id="blade-wrap">
+        <span class="hud-label">鋸條耐用度</span>
+        <div class="blade-bar"><div id="blade-fill"></div></div>
+        <span id="blade-text" class="blade-text">100%</span>
+      </div>
+      <div class="hud-score"><span class="hud-label">分數</span><span id="score">0</span></div>
+    </header>
+
+    <div id="stage">
+      <!-- 階段一：工藝判斷 -->
+      <div id="prep-view" class="view">
+        <div class="card board-card">
+          <svg id="prep-svg" class="board-svg" viewBox="0 0 200 200" aria-hidden="true"></svg>
+          <div class="tags"><span id="tag-thick" class="tag"></span><span id="tag-curve" class="tag"></span></div>
+        </div>
+        <div class="card q-panel">
+          <div id="q-steps" class="q-steps"></div>
+          <h2 id="q-prompt" class="q-prompt"></h2>
+          <div class="q-area">
+            <div id="q-options" class="q-options"></div>
+            <div id="q-feedback" class="q-feedback hidden">
+              <div id="fb-verdict" class="fb-verdict"></div>
+              <p id="fb-text" class="fb-text"></p>
+              <button id="btn-fb-next" class="btn btn-primary" type="button">下一步</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 階段二：拉鋸 -->
+      <div id="saw-view" class="view hidden">
+        <div class="card board-card">
+          <svg id="saw-svg" class="board-svg" viewBox="0 0 200 200" aria-hidden="true"></svg>
+          <div class="progress-txt" id="progress-txt">進度 0%</div>
+        </div>
+        <div id="track">
+          <div class="rail"><div class="zone top">頂</div><div class="zone bottom">底</div><div id="rail-marker"></div></div>
+          <div class="center-guide"></div>
+          <div id="saw"></div>
+          <div id="plank"></div>
+          <div class="gauge" id="gauge">
+            <svg viewBox="0 0 100 58" aria-hidden="true">
+              <path d="M8 52 A42 42 0 0 1 92 52" fill="none" stroke="rgba(255,240,210,.2)" stroke-width="8"/>
+              <path d="M41.2 10.9 A42 42 0 0 1 58.8 10.9" fill="none" stroke="#4fb39a" stroke-width="8"/>
+              <line id="needle" x1="50" y1="52" x2="50" y2="14" stroke="#fff6e4" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="50" cy="52" r="4" fill="#fff6e4"/>
+            </svg>
+            <div class="gauge-text" id="gauge-text">90°</div>
+          </div>
+          <div id="turn-banner" class="hidden"><strong>急彎！原地小幅上下微動轉向</strong><div id="turn-dots" class="dots"></div></div>
+          <div id="hint" class="hidden"><span></span></div>
+          <div id="floats"></div>
+          <div class="key-hint">鍵盤：↓ 拉 ↑ 推　← → 修正角度</div>
+        </div>
+      </div>
+
+      <!-- 單件結果 -->
+      <div id="result" class="hidden">
+        <div class="result-card">
+          <svg id="res-svg" viewBox="0 0 200 200" aria-hidden="true"></svg>
+          <div>
+            <h2 id="res-title"></h2>
+            <ul id="res-lines"></ul>
+            <button id="btn-res-next" class="btn btn-primary" type="button">下一件</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 結算畫面 -->
+  <section id="screen-end" class="screen">
+    <h2 class="end-title">完工結算</h2>
+    <div class="end-score"><span id="final-score">0</span><small>分</small></div>
+    <div id="end-stats"></div>
+    <p id="end-best"></p>
+    <p id="end-review"></p>
+    <button id="btn-restart" class="btn btn-primary" type="button">再挑戰一次</button>
+  </section>
+</main>
+
+<!--
+  ===== 遊戲內容資料 =====
+  老師可以直接修改這段 JSON 來換題目、換作品，不需要動下面的程式。
+  path 使用 SVG path 語法，畫布為 200×200。
+  turns：急彎座標（鋸到這裡需要原地微動轉向）。hole：引孔位置（null 表示從板邊進鋸）。
+-->
+<script type="application/json" id="game-data">
+{
+  "questions": {
+    "tpi": {
+      "prompt": "這個圖樣要配哪一種鋸條？",
+      "short": "鋸條",
+      "options": [
+        { "id": "25T", "label": "25T 細齒鋸條", "sub": "齒密・條身窄" },
+        { "id": "10T", "label": "10T 粗齒鋸條", "sub": "齒疏・條身寬" }
+      ],
+      "explain": {
+        "25T": "圖樣有半徑很小的急彎，窄身細齒的 25T 才轉得過去，薄板的切口也比較平整。",
+        "10T": "厚板配上平緩的大弧線，粗齒 10T 排屑快、走得穩，不容易塞木屑。"
+      },
+      "wrong": {
+        "10T": "寬身鋸條在急彎處會卡住、扭曲。影響：鋸條磨耗加快，每個急彎要多微動幾下。",
+        "25T": "細齒在厚板裡排屑不及，木屑塞住齒縫。影響：鋸條磨耗加快，每一鋸前進較少。"
+      }
+    },
+    "clamp": {
+      "prompt": "工件要怎麼固定？",
+      "short": "固定",
+      "options": [
+        { "id": "vblock", "label": "V 型墊木", "sub": "板子平放・鋸條上下拉" },
+        { "id": "vise", "label": "虎鉗夾持", "sub": "板子夾直・鋸條水平拉" }
+      ],
+      "explain": {
+        "vblock": "薄板平放在 V 型墊木上，一手壓住板子、鋸條垂直上下拉，轉向最靈活。",
+        "vise": "厚板用虎鉗夾牢，鋸切位置靠近鉗口，工件就不會跳動。"
+      },
+      "wrong": {
+        "vise": "薄板夾在虎鉗上會彈跳，甚至裂開。影響：鋸切時板子晃動，鋸條容易歪。",
+        "vblock": "厚板在 V 型墊木上手壓不住。影響：鋸切時板子晃動，鋸條容易歪。"
+      }
+    },
+    "start": {
+      "prompt": "要從哪裡下鋸？",
+      "short": "起鋸",
+      "options": [
+        { "id": "edge", "label": "從板邊進鋸", "sub": "沿引導線切入" },
+        { "id": "drill", "label": "先鑽引孔", "sub": "鋸條穿孔再鎖回鋸弓" }
+      ],
+      "explain": {
+        "edge": "圖樣與板邊相連，直接沿引導線從邊緣切入就可以。",
+        "drill": "要挖空的區域在板子中間，先在廢料區鑽孔，把鋸條穿過孔再裝回鋸弓。"
+      },
+      "wrong": {
+        "edge": "從板邊鋸進去，作品外圍會多出一道切痕！只好改成鑽孔重來。影響：鋸條起始耐用度 -20。",
+        "drill": "圖樣本來就連著板邊，多鑽的孔落在作品上，補救花了不少力氣。影響：鋸條起始耐用度 -20。"
+      }
+    }
+  },
+  "projects": [
+    {
+      "name": "雲朵吊飾",
+      "thickness": "4 mm 薄夾板",
+      "curveText": "雲朵凹角急彎・從板邊進鋸",
+      "thick": false,
+      "path": "M 6 122 L 40 122 A 22 22 0 0 1 52 84 A 28 28 0 0 1 104 66 A 26 26 0 0 1 150 86 A 20 20 0 0 1 160 124 Q 100 140 40 122",
+      "hole": null,
+      "turns": [[52, 84], [104, 66], [150, 86]],
+      "strokes": 12,
+      "answers": { "tpi": "25T", "clamp": "vblock", "start": "edge" }
+    },
+    {
+      "name": "愛心鏤空鑰匙圈",
+      "thickness": "5 mm 薄夾板",
+      "curveText": "心形尖角・封閉在板子中間",
+      "thick": false,
+      "path": "M 100 110 L 100 76 C 88 52, 50 58, 56 92 C 60 116, 90 130, 100 148 C 110 130, 140 116, 144 92 C 150 58, 112 52, 100 76",
+      "hole": [100, 110],
+      "turns": [[100, 76], [100, 148]],
+      "strokes": 12,
+      "answers": { "tpi": "25T", "clamp": "vblock", "start": "drill" }
+    },
+    {
+      "name": "山形手機架",
+      "thickness": "18 mm 厚實木",
+      "curveText": "平緩大弧・從板邊進鋸",
+      "thick": true,
+      "path": "M 6 160 C 40 160, 60 70, 100 70 C 140 70, 160 160, 194 160",
+      "hole": null,
+      "turns": [[100, 70]],
+      "strokes": 10,
+      "answers": { "tpi": "10T", "clamp": "vise", "start": "edge" }
+    },
+    {
+      "name": "面紙盒取紙口",
+      "thickness": "15 mm 厚木板",
+      "curveText": "平緩長橢圓・封閉在板子中間",
+      "thick": true,
+      "path": "M 70 100 L 40 100 A 60 30 0 0 1 160 100 A 60 30 0 0 1 40 100",
+      "hole": [70, 100],
+      "turns": [[160, 100]],
+      "strokes": 10,
+      "answers": { "tpi": "10T", "clamp": "vise", "start": "drill" }
+    }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('game-data').textContent);
+  const Q = DATA.questions;
+  const PROJ = DATA.projects;
+  const QKEYS = ['tpi', 'clamp', 'start'];
+  const BEST_KEY = 'coping-saw-workshop-best';
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  /* ===== 規則參數（可調難度） ===== */
+  const RULE = {
+    fullTop: 0.18, fullBottom: 0.82,  // 全行程：起點要在頂區、終點要在底區
+    maxTilt: 6,                         // 角度容許誤差（度）
+    strongPull: 1.2,                    // 拉回最低速度（行程/秒）
+    forcedPush: 3.6,                    // 推回超過此速度算太用力
+    minStroke: 0.12,                    // 小於此幅度不算一鋸
+    wiggleMin: 0.03, wiggleMax: 0.3,    // 急彎微動幅度
+    forcedTurn: 0.42,                   // 急彎時大力拉超過此幅度＝硬拉
+    wigNeed: 4,
+    wear: { base: 0.6, short: 4, off: 4, push: 5, turn: 9, wiggle: 0.15 }
+  };
+
+  /* ===== 音效（Web Audio 即時合成，不需音檔） ===== */
+  let ac = null, master = null, noiseBuf = null, sawGain = null, sawFilter = null;
+  function initAudio() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ac = new AC();
+    master = ac.createGain(); master.gain.value = 0.7; master.connect(ac.destination);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const t = i / ac.sampleRate;
+      d[i] = (Math.random() * 2 - 1) * (0.35 + 0.65 * Math.abs(Math.sin(Math.PI * 40 * t)) ** 3);
+    }
+    const src = ac.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    sawFilter = ac.createBiquadFilter(); sawFilter.type = 'bandpass'; sawFilter.frequency.value = 2000; sawFilter.Q.value = 0.9;
+    sawGain = ac.createGain(); sawGain.gain.value = 0;
+    src.connect(sawFilter); sawFilter.connect(sawGain); sawGain.connect(master); src.start();
+  }
+  function tone(f, t0, dur, type, vol, slideTo) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t0);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function burst(t0, dur, vol, hp) {
+    const s = ac.createBufferSource(); s.buffer = noiseBuf;
+    const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp;
+    const g = ac.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t0); s.stop(t0 + dur + 0.02);
+  }
+  const SFX = {
+    correct: (t) => { tone(660, t, 0.35, 'triangle', 0.3); tone(990, t + 0.08, 0.4, 'triangle', 0.26); },
+    wrong: (t) => tone(220, t, 0.3, 'sawtooth', 0.14, 110),
+    good: (t) => tone(1320, t, 0.16, 'sine', 0.18),
+    warn: (t) => tone(170, t, 0.18, 'square', 0.07, 120),
+    tick: (t) => tone(1800 + Math.random() * 300, t, 0.05, 'square', 0.05),
+    snap: (t) => { burst(t, 0.25, 0.6, 800); tone(2400, t, 0.12, 'square', 0.1, 500); },
+    fanfare: (t) => [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.11, 0.5, 'triangle', 0.24))
+  };
+  function sfx(n) { if (ac) try { SFX[n](ac.currentTime); } catch (e) { /* ignore */ } }
+  function sawSound(level, pulling) {
+    if (!sawGain) return;
+    const t = ac.currentTime;
+    sawGain.gain.setTargetAtTime(level, t, 0.03);
+    sawFilter.frequency.setTargetAtTime(pulling ? 2600 : 1500, t, 0.05);
+  }
+
+  /* ===== 圖形（全部用 SVG 畫，不依賴外部圖片） ===== */
+  function sawGraphic(k) {
+    return `
+      <defs>
+        <linearGradient id="steel-${k}" x1="0" x2="1"><stop offset="0" stop-color="#6d7880"/><stop offset=".45" stop-color="#e3e9ec"/><stop offset="1" stop-color="#7c878f"/></linearGradient>
+        <linearGradient id="handle-${k}" x1="0" x2="1"><stop offset="0" stop-color="#8a4f22"/><stop offset=".45" stop-color="#d48a47"/><stop offset="1" stop-color="#7a431b"/></linearGradient>
+      </defs>
+      <path d="M90 24 H46 Q22 24 22 48 V172 Q22 196 46 196 H90" fill="none" stroke="url(#steel-${k})" stroke-width="9" stroke-linecap="round"/>
+      <line x1="90" y1="24" x2="90" y2="196" stroke="#cfd6da" stroke-width="2"/>
+      <line x1="92" y1="30" x2="92" y2="190" stroke="#9aa5ab" stroke-width="3" stroke-dasharray="1.2 1.6"/>
+      <rect x="84" y="16" width="12" height="12" rx="2" fill="#f2b134"/>
+      <rect x="84" y="192" width="12" height="12" rx="2" fill="#f2b134"/>
+      <rect x="86" y="204" width="8" height="8" fill="#5b646a"/>
+      <rect x="77" y="210" width="26" height="82" rx="13" fill="url(#handle-${k})"/>
+      <rect x="77" y="210" width="26" height="8" rx="3" fill="#5b646a"/>`;
+  }
+  function bladeVis(teeth) {
+    const x0 = 8, w = 104, y0 = 16, h = teeth > 15 ? 7 : 14, st = w / teeth;
+    let d = `M${x0} ${y0} L${x0 + w} ${y0} L${x0 + w} ${y0 + h}`;
+    for (let k = teeth - 1; k >= 0; k--) {
+      const x = x0 + k * st;
+      d += ` L${(x + st * 0.2).toFixed(2)} ${(y0 + h + st * 0.75).toFixed(2)} L${x.toFixed(2)} ${y0 + h}`;
+    }
+    return `<svg viewBox="0 0 120 52"><defs><linearGradient id="bl${teeth}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f6"/><stop offset="1" stop-color="#8d979e"/></linearGradient></defs>
+      <path d="${d} Z" fill="url(#bl${teeth})" stroke="#5f686e" stroke-width=".7" stroke-linejoin="round"/>
+      <text x="60" y="48" text-anchor="middle" font-size="9" fill="#7a6550">${teeth} 齒 / 吋</text></svg>`;
+  }
+  const VIS = {
+    vblock: `<svg viewBox="0 0 120 70"><rect x="4" y="44" width="112" height="20" rx="3" fill="#7a5532"/>
+      <path d="M8 30 H112 V46 H74 L60 34 L46 46 H8 Z" fill="#c9965a" stroke="#8a6440"/>
+      <rect x="22" y="24" width="76" height="6" rx="1" fill="#f1dcb2" stroke="#b08a55"/>
+      <line x1="60" y1="4" x2="60" y2="44" stroke="#6d7880" stroke-width="2"/>
+      <path d="M52 14 l8 -8 8 8" fill="none" stroke="#e05a47" stroke-width="2.5"/><path d="M52 52 l8 8 8 -8" fill="none" stroke="#e05a47" stroke-width="2.5"/></svg>`,
+    vise: `<svg viewBox="0 0 120 70"><rect x="10" y="40" width="100" height="24" rx="4" fill="#4d5a63"/>
+      <rect x="26" y="14" width="18" height="34" rx="2" fill="#6d7d87"/><rect x="66" y="14" width="18" height="34" rx="2" fill="#6d7d87"/>
+      <rect x="44" y="6" width="22" height="44" fill="#c9965a" stroke="#8a6440"/>
+      <rect x="84" y="28" width="30" height="6" rx="3" fill="#9aa5ab"/><circle cx="114" cy="31" r="5" fill="#f2b134"/>
+      <path d="M10 22 h30 M14 18 l-4 4 4 4" fill="none" stroke="#e05a47" stroke-width="2.5"/></svg>`,
+    edge: `<svg viewBox="0 0 120 70"><rect x="20" y="8" width="94" height="56" rx="3" fill="#ecd4a6" stroke="#b08a55"/>
+      <path d="M20 36 H44 C60 10 96 14 92 40 C88 62 52 58 44 36" fill="none" stroke="#3b3632" stroke-width="2" stroke-dasharray="4 3"/>
+      <path d="M2 36 H32" stroke="#e05a47" stroke-width="3"/><path d="M26 30 l7 6 -7 6" fill="none" stroke="#e05a47" stroke-width="3"/></svg>`,
+    drill: `<svg viewBox="0 0 120 70"><rect x="6" y="20" width="108" height="46" rx="3" fill="#ecd4a6" stroke="#b08a55"/>
+      <ellipse cx="60" cy="43" rx="30" ry="15" fill="none" stroke="#3b3632" stroke-width="2" stroke-dasharray="4 3"/>
+      <circle cx="60" cy="43" r="4.5" fill="#2a1d14"/>
+      <rect x="57" y="0" width="6" height="34" fill="#9aa5ab"/><path d="M57 6 l6 4 M57 14 l6 4 M57 22 l6 4" stroke="#5f686e" stroke-width="1.5"/>
+      <path d="M57 34 L60 40 L63 34 Z" fill="#9aa5ab"/></svg>`
+  };
+  const optVisual = (id) => id === '25T' ? bladeVis(25) : id === '10T' ? bladeVis(10) : (VIS[id] || '');
+
+  function grain() {
+    let s = '';
+    for (let i = 0; i < 15; i++) {
+      const y = 6 + i * 13.5 + ((i * 37) % 7);
+      s += `<path d="M-5 ${y} C 50 ${y - 4 + (i % 3) * 3}, 120 ${y + 5}, 205 ${y - 2}" stroke="#a87f4a" stroke-opacity=".25" stroke-width="${(1 + (i % 3) * 0.6).toFixed(1)}" fill="none"/>`;
+    }
+    return s;
+  }
+  // mode: 'prep' | 'saw' | 'result'
+  function boardSVG(p, mode, ok, frac) {
+    const id = mode;
+    let s = `<defs><clipPath id="clip-${id}"><rect x="3" y="3" width="194" height="194" rx="8"/></clipPath>
+      <linearGradient id="wood-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfb6"/><stop offset="1" stop-color="#dcbb83"/></linearGradient></defs>`;
+    s += `<g clip-path="url(#clip-${id})"><rect width="200" height="200" fill="url(#wood-${id})"/>${grain()}`;
+    if (mode === 'result' && ok) {
+      if (p.hole) s += `<path d="${p.path}" fill="#1d1512" stroke="#6b4a2c" stroke-width="1.5"/>`;
+      else s += `<path d="${p.path}" fill="rgba(0,0,0,.35)" transform="translate(3 5)"/><path d="${p.path}" fill="#f8e7c4" stroke="#b9854a" stroke-width="2" transform="translate(-2 -3)"/>`;
+    }
+    s += `</g><rect x="3" y="3" width="194" height="194" rx="8" fill="none" stroke="#7a5532" stroke-width="${p.thick ? 7 : 3}"/>`;
+    if (mode !== 'result' || !ok) s += `<path d="${p.path}" fill="none" stroke="#3b3632" stroke-width="2" stroke-dasharray="5 4" stroke-linecap="round"/>`;
+    if (mode === 'saw') {
+      if (p.hole) s += `<circle cx="${p.hole[0]}" cy="${p.hole[1]}" r="5.5" fill="#1d1512" stroke="#6b4a2c" stroke-width="1.5"/>`;
+      s += `<g class="turn-marks"></g><path class="cut" d="${p.path}" fill="none" stroke="#e8743b" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += `<circle class="dot" r="6" fill="#f2b134" stroke="#fff" stroke-width="2"/>`;
+    }
+    if (mode === 'result' && !ok) {
+      s += `<path class="cut" d="${p.path}" fill="none" stroke="#e05a47" stroke-width="3.6" stroke-linecap="round" data-frac="${frac}"/>`;
+    }
+    return s;
+  }
+
+  /* ===== 狀態 ===== */
+  let G = null;
+  let onboarded = false;
+  const S = {}; // 拉鋸輸入狀態
+  function resetSaw() {
+    Object.assign(S, { p: 0.08, drag: false, lastY: 0, grabX: 0, tilt: 0, angle: 0, t: 0,
+      dir: 0, anchor: 0.08, ext: 0.08, peak: 0, maxTilt: 0, v: 0, prevP: 0.08, keys: {} });
+  }
+  function newGame() {
+    return {
+      idx: 0, score: 0, shown: 0, phase: 'prep', qIdx: 0, answers: {}, prepCorrect: 0, missed: [],
+      mods: null, health: 100, progress: 0, turns: [], turnIdx: 0, turning: false, wig: 0, wigNeed: 4,
+      proj: null, ps: null, cutEl: null, dotEl: null, pathLen: 0, rect: null, lastCut: 0,
+      stats: { pulls: 0, full: 0, short: 0, off: 0, weak: 0, push: 0, turn: 0, broken: 0, done: 0 }
+    };
+  }
+
+  function show(id) {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+  }
+  function restartAnim(el) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
+
+  function addScore(n, x, y) {
+    G.score += n;
+    const el = $('score'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    if (x != null) {
+      const p = document.createElement('div');
+      p.className = 'score-pop'; p.textContent = '+' + n;
+      p.style.left = x + 'px'; p.style.top = y + 'px';
+      document.body.appendChild(p); setTimeout(() => p.remove(), 1000);
+    }
+  }
+  function setHealth(h, hit) {
+    G.health = clamp(h, 0, 100);
+    const f = $('blade-fill');
+    f.style.width = G.health + '%';
+    f.classList.toggle('mid', G.health <= 55 && G.health > 25);
+    f.classList.toggle('low', G.health <= 25);
+    $('blade-text').textContent = Math.round(G.health) + '%';
+    if (hit) restartAnim($('blade-wrap')), $('blade-wrap').classList.add('hit');
+  }
+  function floatMsg(text, kind, y) {
+    const el = document.createElement('div');
+    el.className = 'float ' + kind; el.textContent = text;
+    el.style.top = ((y == null ? 0.34 : y) * 100) + '%';
+    $('floats').appendChild(el); setTimeout(() => el.remove(), 1150);
+  }
+
+  /* ===== 流程 ===== */
+  function startGame() {
+    initAudio();
+    G = newGame();
+    $('score').textContent = '0';
+    show('screen-play');
+    startProject(0);
+  }
+
+  function startProject(i) {
+    Object.assign(G, { idx: i, proj: PROJ[i], phase: 'prep', qIdx: 0, answers: {} });
+    G.mods = { wearMult: 1, progMult: 1, wobble: 0, extraWig: 0, startPenalty: 0 };
+    G.ps = { prepOk: 0, short: 0, off: 0, weak: 0, push: 0, turn: 0 };
+    $('hud-step').textContent = `作品 ${i + 1} / ${PROJ.length}`;
+    $('hud-project').textContent = G.proj.name;
+    setHealth(100, false);
+    ['result', 'saw-view', 'hint'].forEach((id) => $(id).classList.add('hidden'));
+    $('prep-view').classList.remove('hidden'); restartAnim($('prep-view'));
+    $('prep-svg').innerHTML = boardSVG(G.proj, 'prep');
+    $('tag-thick').textContent = G.proj.thickness;
+    $('tag-thick').classList.toggle('thick', !!G.proj.thick);
+    $('tag-curve').textContent = G.proj.curveText;
+    showQuestion();
+  }
+
+  function renderSteps() {
+    $('q-steps').innerHTML = QKEYS.map((k, i) => {
+      const cls = k in G.answers ? (G.answers[k] ? 'ok' : 'bad') : (i === G.qIdx ? 'now' : '');
+      return `<div class="q-step ${cls}">${Q[k].short}</div>`;
+    }).join('');
+  }
+
+  function showQuestion() {
+    const q = Q[QKEYS[G.qIdx]];
+    renderSteps();
+    $('q-prompt').textContent = q.prompt;
+    $('q-feedback').classList.add('hidden');
+    const box = $('q-options');
+    box.innerHTML = '';
+    box.classList.remove('hidden');
+    q.options.forEach((o) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'opt'; b.dataset.id = o.id;
+      b.innerHTML = `<div class="opt-vis">${optVisual(o.id)}</div><span class="opt-label">${o.label}</span><span class="opt-sub">${o.sub}</span>`;
+      b.addEventListener('click', () => answer(o.id, b));
+      box.appendChild(b);
+    });
+    restartAnim(box);
+  }
+
+  function answer(id, btn) {
+    if (G.phase !== 'prep' || btn.disabled) return;
+    const key = QKEYS[G.qIdx], q = Q[key];
+    const correct = G.proj.answers[key];
+    const ok = id === correct;
+    G.answers[key] = ok;
+    document.querySelectorAll('#q-options .opt').forEach((b) => {
+      b.disabled = true; b.classList.add('spent');
+      if (b.dataset.id === correct) b.classList.add('right');
+      if (b === btn && !ok) b.classList.add('wrong');
+    });
+    const r = btn.getBoundingClientRect();
+    if (ok) {
+      G.prepCorrect++; G.ps.prepOk++;
+      addScore(100, r.left + r.width / 2, r.top + 10);
+      sfx('correct');
+    } else {
+      sfx('wrong');
+      G.missed.push(`${G.proj.name}－${q.short}`);
+      // 判斷錯誤 → 影響後面的鋸切難度
+      if (key === 'tpi') { G.mods.wearMult *= 1.6; if (G.proj.thick) G.mods.progMult = 0.6; else G.mods.extraWig = 3; }
+      if (key === 'clamp') { G.mods.wobble = 8; G.mods.wearMult *= 1.2; }
+      if (key === 'start') G.mods.startPenalty = 20;
+    }
+    renderSteps();
+    setTimeout(() => {
+      const label = q.options.find((o) => o.id === correct).label;
+      $('fb-verdict').textContent = ok ? '判斷正確！' : `正確答案是「${label}」`;
+      $('fb-text').textContent = ok ? q.explain[correct] : q.wrong[id];
+      $('q-feedback').classList.toggle('bad', !ok);
+      $('q-feedback').classList.remove('hidden');
+      $('q-options').classList.add('hidden');
+      $('btn-fb-next').textContent = G.qIdx < QKEYS.length - 1 ? '下一步' : '開始鋸切';
+    }, 650);
+  }
+
+  $('btn-fb-next').addEventListener('click', () => {
+    if (!G || G.phase !== 'prep') return;
+    G.qIdx++;
+    if (G.qIdx < QKEYS.length) showQuestion(); else startSaw();
+  });
+
+  /* ===== 拉鋸階段 ===== */
+  function startSaw() {
+    G.phase = 'saw';
+    $('prep-view').classList.add('hidden');
+    $('saw-view').classList.remove('hidden'); restartAnim($('saw-view'));
+    const svg = $('saw-svg');
+    svg.innerHTML = boardSVG(G.proj, 'saw');
+    G.cutEl = svg.querySelector('.cut');
+    G.dotEl = svg.querySelector('.dot');
+    G.pathLen = G.cutEl.getTotalLength();
+    G.cutEl.style.strokeDasharray = `${G.pathLen} ${G.pathLen}`;
+    // 找出每個急彎在路徑上的位置
+    const N = 600;
+    G.turns = G.proj.turns.map(([tx, ty]) => {
+      let best = 0, bd = Infinity;
+      for (let k = 0; k <= N; k++) {
+        const L = (G.pathLen * k) / N, pt = G.cutEl.getPointAtLength(L);
+        const dd = (pt.x - tx) ** 2 + (pt.y - ty) ** 2;
+        if (dd < 4) { best = L; break; }   // 路徑第一次經過此點就算（避免封閉路徑終點重疊）
+        if (dd < bd) { bd = dd; best = L; }
+      }
+      return { x: tx, y: ty, at: (best / G.pathLen) * G.proj.strokes };
+    }).sort((a, b) => a.at - b.at);
+    svg.querySelector('.turn-marks').innerHTML = G.turns.map((t, i) =>
+      `<circle data-i="${i}" cx="${t.x}" cy="${t.y}" r="8" fill="none" stroke="#e8743b" stroke-width="2" stroke-dasharray="3 2"/>`).join('');
+    Object.assign(G, { turnIdx: 0, turning: false, wig: 0, progress: 0, graceUntil: 0 });
+    setHealth(100 - G.mods.startPenalty, false);
+    $('plank').style.height = G.proj.thick ? 'clamp(26px, 9%, 46px)' : 'clamp(10px, 3%, 16px)';
+    $('turn-banner').classList.add('hidden');
+    const saw = $('saw');
+    saw.classList.remove('broken');
+    saw.style.transform = '';
+    resetSaw();
+    measure();
+    updateCut();
+    if (!onboarded) {
+      $('hint').classList.remove('hidden');
+      $('hint').style.setProperty('--dist', Math.round(G.rect.height * 0.45) + 'px');
+    }
+    if (G.mods.startPenalty) floatMsg('起鋸方式錯誤，補救後耐用度 -20', 'bad', 0.3);
+  }
+
+  function measure() { if (G) G.rect = $('track').getBoundingClientRect(); }
+  window.addEventListener('resize', () => { if (G && G.phase === 'saw') measure(); });
+
+  function updateCut() {
+    const frac = Math.min(1, G.progress / G.proj.strokes);
+    G.cutEl.style.strokeDashoffset = G.pathLen * (1 - frac);
+    const pt = G.cutEl.getPointAtLength(G.pathLen * frac);
+    G.dotEl.setAttribute('cx', pt.x); G.dotEl.setAttribute('cy', pt.y);
+    $('progress-txt').textContent = `進度 ${Math.round(frac * 100)}%`;
+  }
+
+  function wear(n) {
+    setHealth(G.health - n, n >= 2);
+    if (G.health <= 0) breakBlade();
+  }
+  function jam() { const t = $('track'); t.classList.remove('jam'); void t.offsetWidth; t.classList.add('jam'); }
+
+  function advance(gain) {
+    let np = G.progress + gain;
+    const t = G.turns[G.turnIdx];
+    if (t && np >= t.at) { G.progress = t.at; updateCut(); enterTurn(); return; }
+    G.progress = np;
+    updateCut();
+    if (G.progress >= G.proj.strokes - 1e-6) completeProject();
+  }
+
+  function enterTurn() {
+    G.turning = true; G.wig = 0;
+    G.wigNeed = RULE.wigNeed + G.mods.extraWig;
+    $('turn-banner').classList.remove('hidden');
+    renderDots();
+    sfx('warn');
+    const m = $('saw-svg').querySelector(`.turn-marks circle[data-i="${G.turnIdx}"]`);
+    if (m) { m.setAttribute('stroke', '#fff'); m.setAttribute('stroke-width', '3.5'); }
+  }
+  function renderDots() {
+    $('turn-dots').innerHTML = Array.from({ length: G.wigNeed }, (_, i) => `<i class="${i < G.wig ? 'on' : ''}"></i>`).join('');
+  }
+
+  // 急彎時的一次往返
+  function turnStroke(amp, isPull) {
+    if (amp >= RULE.wiggleMin && amp <= RULE.wiggleMax) {
+      G.wig++; renderDots(); sfx('tick');
+      wear(RULE.wear.wiggle * G.mods.wearMult);
+      if (G.phase !== 'saw') return;
+      if (G.wig >= G.wigNeed) {
+        const m = $('saw-svg').querySelector(`.turn-marks circle[data-i="${G.turnIdx}"]`);
+        if (m) { m.setAttribute('stroke', '#4fb39a'); m.removeAttribute('stroke-dasharray'); }
+        G.turning = false; G.turnIdx++; G.progress += 0.001;
+        G.graceUntil = S.t + 0.5; // 轉向後 0.5 秒內的微動不計入一般拉鋸
+        $('turn-banner').classList.add('hidden');
+        floatMsg('鋸條鬆開，順利轉向！', 'good'); sfx('correct');
+      }
+    } else if (amp > RULE.forcedTurn && isPull) {
+      const w = RULE.wear.turn * G.mods.wearMult;
+      G.stats.turn++; G.ps.turn++;
+      floatMsg(`急彎硬拉，鋸條快斷了 -${Math.round(w)}`, 'bad'); sfx('wrong'); jam();
+      wear(w);
+    }
+  }
+
+  // 一次「往下拉」結束
+  function onPull(from, to, peakV, maxTilt) {
+    const amp = to - from;
+    if (G.turning) return turnStroke(amp, true);
+    if (amp < RULE.minStroke || S.t < (G.graceUntil || 0)) return;
+    G.stats.pulls++;
+    const full = from <= RULE.fullTop && to >= RULE.fullBottom;
+    const straight = maxTilt <= RULE.maxTilt;
+    const strong = peakV >= RULE.strongPull;
+    let gain = G.mods.progMult, w = RULE.wear.base;
+    const msgs = [];
+    if (!full) { gain *= 0.35; w += RULE.wear.short; G.stats.short++; G.ps.short++; msgs.push(['行程太短，鋸條局部磨耗', 'bad']); }
+    if (!straight) { gain *= 0.4; w += RULE.wear.off; G.stats.off++; G.ps.off++; msgs.push(['沒有保持 90°，鋸條歪了', 'bad']); }
+    if (!strong) { gain *= 0.5; G.stats.weak++; G.ps.weak++; msgs.push(['往下拉時要出力', 'info']); }
+    w *= G.mods.wearMult;
+    if (!msgs.length) {
+      G.stats.full++;
+      floatMsg('漂亮！全行程拉鋸', 'good'); sfx('good');
+      if (!onboarded) { onboarded = true; $('hint').classList.add('hidden'); }
+    } else {
+      floatMsg(msgs[0][0] + (w >= 2 ? `  -${Math.round(w)}` : ''), msgs[0][1]); sfx('warn');
+    }
+    wear(w);
+    if (G.phase === 'saw') advance(gain);
+  }
+
+  // 一次「往上推」結束
+  function onPush(from, to, peakUp) {
+    const amp = from - to;
+    if (G.turning) return turnStroke(amp, false);
+    if (amp < RULE.minStroke) return;
+    if (peakUp > RULE.forcedPush) {
+      const w = RULE.wear.push * G.mods.wearMult;
+      G.stats.push++; G.ps.push++;
+      floatMsg(`推回太用力，鋸條卡住 -${Math.round(w)}`, 'bad', 0.62); sfx('wrong'); jam();
+      wear(w);
+    }
+  }
+
+  function breakBlade() {
+    if (G.phase !== 'saw') return;
+    G.phase = 'result'; G.stats.broken++;
+    sawSound(0, false); sfx('snap');
+    const saw = $('saw');
+    saw.classList.add('broken');
+    saw.style.transform = `translate(-75%,-37%) translateY(${G.rect.height}px) rotate(40deg)`;
+    $('turn-banner').classList.add('hidden');
+    floatMsg('啪！鋸條斷了', 'bad', 0.45);
+    setTimeout(() => showResult(false), 1100);
+  }
+
+  function completeProject() {
+    if (G.phase !== 'saw') return;
+    G.phase = 'result'; G.stats.done++;
+    sawSound(0, false); sfx('fanfare');
+    G.lastCut = 200 + Math.round(G.health) * 3;
+    const r = $('track').getBoundingClientRect();
+    addScore(G.lastCut, r.left + r.width / 2, r.top + r.height * 0.4);
+    setTimeout(() => showResult(true), 700);
+  }
+
+  function showResult(ok) {
+    const frac = Math.min(1, G.progress / G.proj.strokes);
+    const svg = $('res-svg');
+    svg.innerHTML = boardSVG(G.proj, 'result', ok, frac);
+    if (!ok) {
+      const c = svg.querySelector('.cut'), L = c.getTotalLength();
+      c.style.strokeDasharray = `${L} ${L}`; c.style.strokeDashoffset = L * (1 - frac);
+    }
+    $('res-title').textContent = ok ? `完工！${G.proj.name}` : '鋸條斷了，作品未完成';
+    const lines = [`工藝判斷：<b>${G.ps.prepOk} / 3</b> 正確（+${G.ps.prepOk * 100}）`];
+    lines.push(ok ? `鋸切完成，鋸條剩 <b>${Math.round(G.health)}%</b>（+${G.lastCut}）` : `鋸切進度 <b>${Math.round(frac * 100)}%</b>（+0）`);
+    const tips = [];
+    if (G.ps.turn) tips.push(`急彎硬拉 ${G.ps.turn} 次：遇到急彎要原地小幅上下微動`);
+    if (G.ps.off) tips.push(`角度歪斜 ${G.ps.off} 次：手不要左右飄，鋸條與板面保持垂直`);
+    if (G.ps.short) tips.push(`行程太短 ${G.ps.short} 次：從頂拉到底，用滿整條鋸條`);
+    if (G.ps.push) tips.push(`推回太用力 ${G.ps.push} 次：往上推時放輕`);
+    if (G.ps.weak) tips.push(`拉得太輕 ${G.ps.weak} 次：往下拉時要出力`);
+    lines.push(`<span class="tip">${tips[0] || (ok ? '節奏完美：拉時出力、推時放鬆！' : '再試一次，注意鋸條耐用度')}</span>`);
+    $('res-lines').innerHTML = lines.map((l) => `<li>${l}</li>`).join('');
+    $('btn-res-next').textContent = G.idx < PROJ.length - 1 ? '下一件作品' : '查看結算';
+    $('result').classList.remove('hidden');
+  }
+
+  $('btn-res-next').addEventListener('click', () => {
+    if (!G || G.phase !== 'result') return;
+    if (G.idx < PROJ.length - 1) startProject(G.idx + 1); else endGame();
+  });
+
+  /* ===== 輸入：滑鼠／觸控拖曳 + 鍵盤 ===== */
+  const track = $('track');
+  track.addEventListener('pointerdown', (e) => {
+    if (!G || G.phase !== 'saw') return;
+    e.preventDefault(); initAudio(); measure();
+    S.drag = true; S.lastY = e.clientY; S.grabX = e.clientX; S.tilt = 0;
+    track.classList.add('dragging');
+    try { track.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+  track.addEventListener('pointermove', (e) => {
+    if (!S.drag || !G || G.phase !== 'saw') return;
+    const travel = Math.max(80, G.rect.height * 0.6);          // 手指移動多少 px = 一個全行程
+    S.p = clamp(S.p + (e.clientY - S.lastY) / travel, 0, 1);
+    S.lastY = e.clientY;
+    S.tilt = clamp(((e.clientX - S.grabX) / (G.rect.width * 0.5)) * 22, -25, 25); // 橫向偏移 → 鋸條傾斜
+  });
+  const endDrag = () => { S.drag = false; track.classList.remove('dragging'); };
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  const KEYS = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+  document.addEventListener('keydown', (e) => {
+    const k = KEYS[e.code];
+    if (!k || !G || G.phase !== 'saw') return;
+    e.preventDefault(); initAudio(); S.keys[k] = true;
+  });
+  document.addEventListener('keyup', (e) => { const k = KEYS[e.code]; if (k) S.keys[k] = false; });
+
+  /* ===== 主迴圈 ===== */
+  let lastT = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+    if (G && G.phase === 'saw') sawStep(dt);
+    if (G && G.shown !== G.score) {
+      const diff = G.score - G.shown;
+      G.shown += Math.abs(diff) < 2 ? diff : Math.ceil(diff * Math.min(1, dt * 10));
+      $('score').textContent = Math.round(G.shown);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function sawStep(dt) {
+    S.t += dt;
+    if (S.keys.down) S.p = Math.min(1, S.p + 2.0 * dt);   // 鍵盤拉：每秒 2 個行程
+    if (S.keys.up) S.p = Math.max(0, S.p - 1.0 * dt);     // 鍵盤推：每秒 1 個行程
+    if (S.keys.left) S.tilt = Math.max(-25, S.tilt - 30 * dt);
+    if (S.keys.right) S.tilt = Math.min(25, S.tilt + 30 * dt);
+    if (!S.drag && !S.keys.left && !S.keys.right) S.tilt *= Math.exp(-dt * 3);
+    const wob = G.mods.wobble ? G.mods.wobble * (Math.sin(S.t * 1.3) + 0.35 * Math.sin(S.t * 3.1 + 1)) : 0;
+    S.angle = S.tilt + wob;
+    const absA = Math.abs(S.angle);
+
+    // 速度（行程/秒，正 = 往下拉），做一點平滑
+    const inst = dt > 0 ? (S.p - S.prevP) / dt : 0;
+    S.v += (inst - S.v) * (1 - Math.exp(-dt / 0.06));
+    S.prevP = S.p;
+
+    // 方向反轉偵測（含遲滯，避免抖動誤判）
+    const hyst = G.turning ? 0.02 : 0.05;
+    S.maxTilt = Math.max(S.maxTilt, absA);
+    if (S.dir === 0) {
+      if (S.p - S.anchor > hyst) { S.dir = 1; S.ext = S.p; S.peak = Math.max(0, S.v); S.maxTilt = absA; }
+      else if (S.anchor - S.p > hyst) { S.dir = -1; S.ext = S.p; S.peak = Math.max(0, -S.v); }
+    } else if (S.dir === 1) {
+      S.peak = Math.max(S.peak, S.v);
+      if (S.p > S.ext) S.ext = S.p;
+      else if (S.ext - S.p > hyst) {
+        const a = S.anchor, b = S.ext, pk = S.peak, mt = S.maxTilt;
+        Object.assign(S, { dir: -1, anchor: b, ext: S.p, peak: Math.max(0, -S.v), maxTilt: absA });
+        onPull(a, b, pk, mt);
+      }
+    } else {
+      S.peak = Math.max(S.peak, -S.v);
+      if (S.p < S.ext) S.ext = S.p;
+      else if (S.p - S.ext > hyst) {
+        const a = S.anchor, b = S.ext, pk = S.peak;
+        Object.assign(S, { dir: 1, anchor: b, ext: S.p, peak: Math.max(0, S.v), maxTilt: absA });
+        onPush(a, b, pk);
+      }
+    }
+    if (G.phase !== 'saw') return;
+
+    // 畫面
+    const H = G.rect ? G.rect.height : 300;
+    const y = (S.p - 0.5) * H * 0.28;
+    $('saw').style.transform = `translate(-75%,-37%) translateY(${y.toFixed(1)}px) rotate(${S.angle.toFixed(2)}deg)`;
+    const mk = $('rail-marker');
+    mk.style.top = (S.p * 100) + '%';
+    mk.classList.toggle('in', S.p <= RULE.fullTop || S.p >= RULE.fullBottom);
+    $('needle').style.transform = `rotate(${(S.angle * 2).toFixed(2)}deg)`;
+    $('gauge-text').textContent = Math.round(90 - S.angle) + '°';
+    $('gauge').classList.toggle('off', absA > RULE.maxTilt);
+
+    const sp = Math.abs(S.v);
+    sawSound(sp > 0.05 ? Math.min(0.5, sp * 0.2) * (S.v > 0 ? 1 : 0.5) : 0, S.v > 0);
+  }
+
+  /* ===== 結算 ===== */
+  function endGame() {
+    G.phase = 'end';
+    sawSound(0, false);
+    $('result').classList.add('hidden');
+    $('final-score').textContent = G.score;
+    const st = G.stats, total = PROJ.length * QKEYS.length;
+    const fullPct = st.pulls ? Math.round((st.full / st.pulls) * 100) : 0;
+    $('end-stats').innerHTML = [
+      [`${G.prepCorrect}/${total}`, '工藝判斷正確'],
+      [`${fullPct}%`, '標準拉鋸比例'],
+      [`${st.done}/${PROJ.length}`, '完成作品'],
+      [`${st.broken}`, '斷掉的鋸條']
+    ].map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+    let prev = null;
+    try { prev = JSON.parse(localStorage.getItem(BEST_KEY)); } catch (e) { prev = null; }
+    const best = $('end-best');
+    if (typeof prev !== 'number') best.textContent = '第一次完工結算！';
+    else if (G.score > prev) best.textContent = `刷新個人最佳！（之前 ${prev} 分）`;
+    else best.textContent = `個人最佳：${prev} 分`;
+    try { if (typeof prev !== 'number' || G.score > prev) localStorage.setItem(BEST_KEY, JSON.stringify(G.score)); } catch (e) { /* ignore */ }
+    $('end-review').textContent = G.missed.length ? `需要複習：${G.missed.join('、')}` : '所有工藝判斷都答對了，太厲害了！';
+    show('screen-end');
+    sfx('fanfare');
+  }
+
+  $('cover').innerHTML = `<svg viewBox="0 0 300 120"><g transform="translate(300 0) rotate(90)">${sawGraphic('cover')}</g></svg>`;
+  $('saw').innerHTML = `<svg viewBox="0 0 120 300">${sawGraphic('play')}</svg>`;
+  $('btn-start').addEventListener('click', startGame);
+  $('btn-restart').addEventListener('click', startGame);
+  resetSaw();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
